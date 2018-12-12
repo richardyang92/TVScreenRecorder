@@ -4,22 +4,29 @@ import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ScreenRecorder implements VideoEncoder.Callback {
     private static final String TAG = "ScreenRecorder";
+    private Context mContext;
     private MediaMuxer mMediaMuxer;
     private VideoEncoder mVideoEncoder;
     private int mVideoTrackIndex;
     private boolean mMuxerStarted;
+    private long mRecordStartedTime;
+    private Handler mHandler;
 
     public ScreenRecorder(Context context,
                           VideoFormat videoFormat,
                           AudioFormat audioFormat,
                           String recordPath) {
+        mContext = context;
+        mHandler = new Handler();
         try {
             initVEncoder(context, videoFormat);
             initMuxer(recordPath);
@@ -60,19 +67,26 @@ public class ScreenRecorder implements VideoEncoder.Callback {
 
     @Override
     public void onVideoEncodeStopped() {
+        Log.i(TAG, "onVideoEncodeStopped: start");
         deInitVEncoder();
-        stop();
     }
 
     boolean isMuxerStarted() {
         return mMuxerStarted;
     }
 
+    public long getRecordStartedTime() {
+        return mRecordStartedTime;
+    }
+
     public void start() {
+        mRecordStartedTime = System.currentTimeMillis();
         mVideoEncoder.encode();
+        Toast.makeText(mContext, "录屏开始", Toast.LENGTH_LONG).show();
     }
 
     public void stop() {
+        Toast.makeText(mContext, "录屏结束", Toast.LENGTH_LONG).show();
         deInitMuxer();
     }
 
@@ -90,7 +104,14 @@ public class ScreenRecorder implements VideoEncoder.Callback {
     }
 
     private void deInitVEncoder() {
-        mVideoEncoder.release();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mVideoEncoder.release();
+                stop();
+                Log.i(TAG, "onVideoEncodeStopped: stop");
+            }
+        });
     }
 
     private void deInitMuxer() {

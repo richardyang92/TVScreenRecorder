@@ -10,7 +10,7 @@ import android.util.Log;
 import com.funshion.screenrecorder.codec.AudioFormat;
 import com.funshion.screenrecorder.codec.ScreenRecorder;
 import com.funshion.screenrecorder.codec.VideoFormat;
-import com.funshion.screenrecorder.util.Const;
+import com.funshion.screenrecorder.util.RecordConst;
 
 public class RecordService extends Service {
     private static final String TAG = "RecordService";
@@ -83,10 +83,10 @@ public class RecordService extends Service {
         if (intent == null) {
             throw new IllegalStateException("intent is null");
         }
-        mDstPath = intent.getStringExtra(Const.RECORD_PATH);
-        mWidth = intent.getIntExtra(Const.RECORD_WIDTH, RECORD_DEFAULT_WIDTH);
-        mHeight = intent.getIntExtra(Const.RECORD_HEIGHT, RECORD_DEFAULT_HEIGHT);
-        mBitRate = intent.getIntExtra(Const.RECORD_BITRATE, RECORD_DEFAULT_BITRATE);
+        mDstPath = intent.getStringExtra(RecordConst.RECORD_PATH);
+        mWidth = intent.getIntExtra(RecordConst.VIDEO_WIDTH, RECORD_DEFAULT_WIDTH);
+        mHeight = intent.getIntExtra(RecordConst.VIDEO_HEIGHT, RECORD_DEFAULT_HEIGHT);
+        mBitRate = intent.getIntExtra(RecordConst.VIDEO_BITRATE, RECORD_DEFAULT_BITRATE);
     }
 
     public void record() {

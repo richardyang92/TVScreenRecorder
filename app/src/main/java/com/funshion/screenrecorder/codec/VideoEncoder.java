@@ -9,7 +9,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
 
-import com.funshion.screenrecorder.util.Const;
+import com.funshion.screenrecorder.util.RecordConst;
+import com.funshion.screenrecorder.util.RecordHelper;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ public final class VideoEncoder implements IEncoder {
     private Context mContext;
     private Callback mCallback;
     private VirtualDisplay mVirtualDisplay;
-    private EncodeThread mEncodeThread;
+    private AVCEncodeThread mAVCEncodeThread;
 
     VideoEncoder(VideoFormat videoFormat) {
         mVFormat = videoFormat.toMediaFormat();
@@ -46,7 +47,7 @@ public final class VideoEncoder implements IEncoder {
 
     @Override
     public void prepare() throws IOException {
-        mVCodec = MediaCodec.createEncoderByType(Const.MIME_TYPE);
+        mVCodec = MediaCodec.createEncoderByType(RecordConst.VIDEO_MIME_TYPE);
         mVCodec.configure(mVFormat, null, null,
                 MediaCodec.CONFIGURE_FLAG_ENCODE);
         mSurface = mVCodec.createInputSurface();
@@ -54,7 +55,8 @@ public final class VideoEncoder implements IEncoder {
         DisplayManager displayManager = (DisplayManager)
                 mContext.getSystemService(Context.DISPLAY_SERVICE);
         int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_PRESENTATION |
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC |
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_SECURE;
         if (displayManager != null) {
             mVirtualDisplay = displayManager.createVirtualDisplay("-display-",
                     mVFormat.getInteger(MediaFormat.KEY_WIDTH),
@@ -66,15 +68,14 @@ public final class VideoEncoder implements IEncoder {
 
     @Override
     public void encode() {
-        Log.i(TAG, "encode: start");
-        mEncodeThread = new EncodeThread(false);
-        new Thread(mEncodeThread).start();
+        mAVCEncodeThread = new AVCEncodeThread(false);
+        new Thread(mAVCEncodeThread).start();
     }
 
     @Override
     public void release() {
-        if (mEncodeThread != null && !mEncodeThread.mQuit.get()) {
-            mEncodeThread.mQuit = new AtomicBoolean(true);
+        if (mAVCEncodeThread != null && !mAVCEncodeThread.mAVCQuit.get()) {
+            mAVCEncodeThread.mAVCQuit = new AtomicBoolean(true);
         }
         if (mVCodec != null) {
             mVCodec.stop();
@@ -90,22 +91,23 @@ public final class VideoEncoder implements IEncoder {
         }
     }
 
-    private class EncodeThread implements Runnable {
-        private AtomicBoolean mQuit;
-        long startTime;
-        MediaCodec.BufferInfo mBufferInfo;
+    private class AVCEncodeThread implements Runnable {
+        private AtomicBoolean mAVCQuit;
+        MediaCodec.BufferInfo mAVCBufferInfo;
 
-        EncodeThread(boolean quit) {
-            mQuit = new AtomicBoolean(quit);
-            startTime = System.currentTimeMillis();
+        AVCEncodeThread(boolean quit) {
+            mAVCQuit = new AtomicBoolean(quit);
         }
+
         @Override
         public void run() {
             mVCodec.start();
             ByteBuffer[] encoderOutputBuffers = mVCodec.getOutputBuffers();
-            mBufferInfo = new MediaCodec.BufferInfo();
-            while (!mQuit.get() && calculateEncodingTime() < Const.RECORD_TOTAL_TIME) {
-                int encoderStatus = mVCodec.dequeueOutputBuffer(mBufferInfo, Const.TIMEOUT_US);
+            mAVCBufferInfo = new MediaCodec.BufferInfo();
+            long acvEncodeStartedTime = ((ScreenRecorder) mCallback).getRecordStartedTime();
+            while (!mAVCQuit.get() &&
+                    RecordHelper.calculateEncodingTime(acvEncodeStartedTime) < RecordConst.RECORD_TOTAL_TIME) {
+                int encoderStatus = mVCodec.dequeueOutputBuffer(mAVCBufferInfo, RecordConst.VIDEO_TIMEOUT_US);
                 if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                     Log.i(TAG, "no output from encoder available");
                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
@@ -127,17 +129,12 @@ public final class VideoEncoder implements IEncoder {
                         throw new IllegalStateException("MediaMuxer dose not call addTrack(format) ");
                     }
                     ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
-                    mCallback.onVideoTrackEncoded(encodedData, mBufferInfo);
+                    mCallback.onVideoTrackEncoded(encodedData, mAVCBufferInfo);
                     mVCodec.releaseOutputBuffer(encoderStatus, false);
                 }
             }
-            Log.i(TAG, "stop EncodeThread");
+            Log.i(TAG, "stop AVCEncodeThread");
             mCallback.onVideoEncodeStopped();
-        }
-
-        private long calculateEncodingTime() {
-            long currentTime = System.currentTimeMillis();
-            return currentTime - startTime;
         }
     }
 }
