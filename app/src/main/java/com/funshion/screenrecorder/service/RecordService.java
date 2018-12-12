@@ -7,8 +7,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 
-import com.funshion.screenrecorder.codec.EncoderParams;
-import com.funshion.screenrecorder.codec.RecordEncoder;
+import com.funshion.screenrecorder.codec.AudioFormat;
+import com.funshion.screenrecorder.codec.ScreenRecorder;
+import com.funshion.screenrecorder.codec.VideoFormat;
+import com.funshion.screenrecorder.util.Const;
 
 public class RecordService extends Service {
     private static final String TAG = "RecordService";
@@ -81,15 +83,19 @@ public class RecordService extends Service {
         if (intent == null) {
             throw new IllegalStateException("intent is null");
         }
-        mDstPath = intent.getStringExtra(EncoderParams.RECORD_PATH);
-        mWidth = intent.getIntExtra(EncoderParams.RECORD_WIDTH, RECORD_DEFAULT_WIDTH);
-        mHeight = intent.getIntExtra(EncoderParams.RECORD_HEIGHT, RECORD_DEFAULT_HEIGHT);
-        mBitRate = intent.getIntExtra(EncoderParams.RECORD_BITRATE, RECORD_DEFAULT_BITRATE);
+        mDstPath = intent.getStringExtra(Const.RECORD_PATH);
+        mWidth = intent.getIntExtra(Const.RECORD_WIDTH, RECORD_DEFAULT_WIDTH);
+        mHeight = intent.getIntExtra(Const.RECORD_HEIGHT, RECORD_DEFAULT_HEIGHT);
+        mBitRate = intent.getIntExtra(Const.RECORD_BITRATE, RECORD_DEFAULT_BITRATE);
     }
 
     public void record() {
-        RecordEncoder encoder = new RecordEncoder(this,
-                mWidth, mHeight, mBitRate, mDstPath);
-        encoder.encode();
+        VideoFormat videoFormat = new VideoFormat();
+        videoFormat.setVideoWidth(mWidth);
+        videoFormat.setVideoHeight(mHeight);
+        videoFormat.setVideoBitrate(mBitRate);
+        ScreenRecorder screenRecorder = new ScreenRecorder(this,
+                videoFormat, new AudioFormat(), mDstPath);
+        screenRecorder.start();
     }
 }
