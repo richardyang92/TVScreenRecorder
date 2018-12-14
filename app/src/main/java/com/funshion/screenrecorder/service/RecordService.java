@@ -10,13 +10,11 @@ import android.util.Log;
 import com.funshion.screenrecorder.codec.AudioFormat;
 import com.funshion.screenrecorder.codec.ScreenRecorder;
 import com.funshion.screenrecorder.codec.VideoFormat;
-import com.funshion.screenrecorder.ui.RecordActivity;
 import com.funshion.screenrecorder.util.RecordConst;
 
 public class RecordService extends Service {
     private static final String TAG = "RecordService";
     private static final int RECORDER_INIT_CMD = 0x01;
-    private static final int RECORDER_START_ACTIVITY_CMD = 0x02;
     private static final int RECORDER_RECORD_CMD = 0x03;
     private static final int RECORD_DEFAULT_WIDTH = 1280;
     private static final int RECORD_DEFAULT_HEIGHT = 720;
@@ -46,9 +44,6 @@ public class RecordService extends Service {
                     case RECORDER_INIT_CMD:
                         init((Intent) message.obj);
                         break;
-                    case RECORDER_START_ACTIVITY_CMD:
-                        startFloatingWindow();
-                        break;
                     case RECORDER_RECORD_CMD:
                         record();
                         break;
@@ -62,7 +57,6 @@ public class RecordService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand: record video");
         postInit(intent);
-        postStartFloatingWindow();
         postRecord();
         return START_NOT_STICKY;
     }
@@ -76,12 +70,6 @@ public class RecordService extends Service {
         Message message = Message.obtain();
         message.what = RECORDER_INIT_CMD;
         message.obj = intent;
-        mHandler.sendMessage(message);
-    }
-
-    private void postStartFloatingWindow() {
-        Message message = Message.obtain();
-        message.what = RECORDER_START_ACTIVITY_CMD;
         mHandler.sendMessage(message);
     }
 
@@ -99,13 +87,6 @@ public class RecordService extends Service {
         mWidth = intent.getIntExtra(RecordConst.VIDEO_WIDTH, RECORD_DEFAULT_WIDTH);
         mHeight = intent.getIntExtra(RecordConst.VIDEO_HEIGHT, RECORD_DEFAULT_HEIGHT);
         mBitRate = intent.getIntExtra(RecordConst.VIDEO_BITRATE, RECORD_DEFAULT_BITRATE);
-    }
-
-    private void startFloatingWindow() {
-        Intent recordIntent = new Intent();
-        recordIntent.setClass(this, RecordActivity.class);
-        recordIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(recordIntent);
     }
 
     public void record() {
