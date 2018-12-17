@@ -10,24 +10,12 @@ public class AFormat implements Format {
     private int audioSampleRate;
     private int audioBitrate;
 
-    public int getAudioChannel() {
-        return audioChannel;
-    }
-
     public void setAudioChannel(int audioChannel) {
         this.audioChannel = audioChannel;
     }
 
-    public int getAudioSampleRate() {
-        return audioSampleRate;
-    }
-
     public void setAudioSampleRate(int audioSampleRate) {
         this.audioSampleRate = audioSampleRate;
-    }
-
-    public int getAudioBitrate() {
-        return audioBitrate;
     }
 
     public void setAudioBitrate(int audioBitrate) {

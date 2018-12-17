@@ -12,24 +12,12 @@ public class VFormat implements Format {
     private int videoHeight;
     private int videoBitrate;
 
-    public int getVideoWidth() {
-        return videoWidth;
-    }
-
     public void setVideoWidth(int videoWidth) {
         this.videoWidth = videoWidth;
     }
 
-    public int getVideoHeight() {
-        return videoHeight;
-    }
-
     public void setVideoHeight(int videoHeight) {
         this.videoHeight = videoHeight;
-    }
-
-    public int getVideoBitrate() {
-        return videoBitrate;
     }
 
     public void setVideoBitrate(int videoBitrate) {

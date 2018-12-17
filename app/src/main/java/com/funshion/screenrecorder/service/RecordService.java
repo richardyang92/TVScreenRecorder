@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
-import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
