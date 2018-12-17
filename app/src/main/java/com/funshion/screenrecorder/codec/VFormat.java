@@ -6,8 +6,8 @@ import android.util.Log;
 
 import com.funshion.screenrecorder.util.RecordConst;
 
-public class VideoFormat implements IFormat {
-    private static final String TAG = "VideoFormat";
+public class VFormat implements Format {
+    private static final String TAG = "VFormat";
     private int videoWidth;
     private int videoHeight;
     private int videoBitrate;
