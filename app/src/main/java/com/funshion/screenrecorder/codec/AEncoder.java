@@ -50,7 +50,7 @@ public class AEncoder implements Encoder {
         mACodec.configure(mAFormat, null, null, flags);
         mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.REMOTE_SUBMIX,
                 mAFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE),
-                AudioFormat.CHANNEL_IN_STEREO,
+                AudioFormat.CHANNEL_IN_DEFAULT,
                 AudioFormat.ENCODING_PCM_16BIT,
                 minBufferSize * 2);
         Log.d(TAG, "create AudioRecord: " + mAudioRecord);
