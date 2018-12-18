@@ -90,7 +90,7 @@ public class RecordService extends Service
         AFormat aFormat = new AFormat();
         aFormat.setAudioChannel(
                 AudioFormat.CHANNEL_IN_DEFAULT);
-        aFormat.setAudioSampleRate(44100);
+        aFormat.setAudioSampleRate(32000);
         aFormat.setAudioBitrate(128000);
 
         MediaProjectionManager mediaProjectionManager = (MediaProjectionManager)
